@@ -47,5 +47,3 @@ def arrendondar_temperatura(temperaturaMedia):
         temperaturaMedia = math.trunc(temperaturaMedia) + 0.5
     
     return temperaturaMedia
-    
-    

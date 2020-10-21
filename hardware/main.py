@@ -8,7 +8,8 @@ import leituraSondaPH as ph
 import leituraSondaOD as od
 import leituraSondaTemperatura as temperatura
 
-GPIO.setup(12, GPIO.OUT)
+GPIO.setup(21, GPIO.OUT)
+
 #CONEXAO COM O BANCO DE DADOS
 try:
     db_connection = mysql.connector.connect(host='localhost', user='root', password='123', database='automatizacao_aerador')
@@ -64,45 +65,41 @@ while True:
     oxigenioDissolvido = round(oxigenioDissolvido, 2)
     
     #SALVA NO BANCO OS VALORES DE OD,PH E TEMPERAURA
-    #sql = "INSERT INTO dado_obtido_sensor(dataHora, valorObtidoSonda, idSensor) VALUES (CURRENT_TIMESTAMP, %s, %s)"
-    #values = [(oxigenioDissolvido, 1), (valorPH, 2), (temperaturaFinal, 3)]
-    #mycursor.executemany(sql, values)
-    #db_connection.commit()
+    sql = "INSERT INTO dado_obtido_sensor(dataHora, valorObtidoSonda, idSensor) VALUES (CURRENT_TIMESTAMP, %s, %s)"
+    values = [(oxigenioDissolvido, 1), (valorPH, 2), (temperaturaFinal, 3)]
+    mycursor.executemany(sql, values)
+    db_connection.commit()
         
     print("\nOxigenio:", oxigenioDissolvido)
         
     #SETA VALOR PARA AERADOR LIGADO OU NAO
-    #if oxigenioDissolvido < 5.0 and estadoAnteriorAerador == 0:
-    #    #SALVA NA TABELA AERADOR O HORARIO QUE O AERADOR FOI ATIVADO
-    #    sql = "INSERT INTO aerador(dataHoraInicio, dataHoraFim) VALUE (CURRENT_TIMESTAMP, NULL)"
-    #    mycursor.execute(sql)
-    #    db_connection.commit()
+    if oxigenioDissolvido < 5.0 and aeradorLigado == 0:
+        #SALVA NA TABELA AERADOR O HORARIO QUE O AERADOR FOI ATIVADO
+        sql = "INSERT INTO aerador(dataHoraInicio, dataHoraFim) VALUE (CURRENT_TIMESTAMP, NULL)"
+        mycursor.execute(sql)
+        db_connection.commit()
        
-        #SETA 1 NA PORTA GPIO12 PARA QUE O AERADOR SEJA ATIVADO
-    #    aeradorLigado = 1
-    #    GPIO.output(12,1)
-    #elif oxigenioDissolvido >= 6.0 and estadoAnteriorAerador == 0:
-    #    #BUSCA NA TABELA AERADOR O ULTIMO REGISTRO DO AERADOR LIGADO PARA SALVAR A HORA DE FIM DE EXECUCAO
-    #    sql = "SELECT idAerador FROM aerador where dataHoraFim is null ORDER BY idAerador DESC LIMIT 1"
-    #    mycursor.execute(sql)
-    #    resultadoSQL = mycursor.fetchall()
-    #    idAerador = resultadoSQL[0][0]
+        #SETA 1 NA PORTA GPIO21 PARA QUE O AERADOR SEJA ATIVADO
+        aeradorLigado = 1
+        GPIO.output(21,1)
+    elif oxigenioDissolvido >= 6.0 and aeradorLigado == 1:
+        #BUSCA NA TABELA AERADOR O ULTIMO REGISTRO DO AERADOR LIGADO PARA SALVAR A HORA DE FIM DE EXECUCAO
+        sql = "SELECT idAerador FROM aerador where dataHoraFim is null ORDER BY idAerador DESC LIMIT 1"
+        mycursor.execute(sql)
+        resultadoSQL = mycursor.fetchall()
+        idAerador = resultadoSQL[0][0]
      
         #SALVA NA TABELA AERADOR O HORARIO QUE O AERADOR FOI DESATIVADO
-    #    sql = "UPDATE aerador SET dataHoraFim = CURRENT_TIMESTAMP WHERE idAerador = %s"
-    #    values = (idAerador,)            
-    #    mycursor.execute(sql, values)
-    #    db_connection.commit()     
+        sql = "UPDATE aerador SET dataHoraFim = CURRENT_TIMESTAMP WHERE idAerador = %s"
+        values = (idAerador,)            
+        mycursor.execute(sql, values)
+        db_connection.commit()     
         
         #SETA 0 NA PORTA GPIO12 PARA QUE O AERADOR SEJA DESATIVADO
-    #    aeradorLigado = 0
-    #    GPIO.output(12,0)
+        aeradorLigado = 0
+        GPIO.output(21,0)
         
-    #print('Aerador Ligado: ', aeradorLigado)
+    print('Aerador Ligado: ', aeradorLigado)
     print('\n\n')
-    time.sleep(1800.0)
-    
-    
-    
-    
-
+   #time.sleep(1800.0) #30 min
+    time.sleep(60.0) #1 min
