@@ -37,6 +37,7 @@ else:
 
 aeradorLigado = 0
 estadoAnteriorAerador = 0
+intervaloLeitura = 1800.0 #30 min
 while True:
     #LÊ SENDOR DE OD (PERCENTAGEM SATURACAO)
     percentagemSaturacaoOxigenio = od.capturar_saturacao(valorCalibrado[0][0])
@@ -73,16 +74,17 @@ while True:
     print("\nOxigenio:", oxigenioDissolvido)
         
     #SETA VALOR PARA AERADOR LIGADO OU NAO
-    if oxigenioDissolvido < 5.0 and aeradorLigado == 0:
+    if oxigenioDissolvido <= 4.5 and aeradorLigado == 0:
         #SALVA NA TABELA AERADOR O HORARIO QUE O AERADOR FOI ATIVADO
         sql = "INSERT INTO aerador(dataHoraInicio, dataHoraFim) VALUE (CURRENT_TIMESTAMP, NULL)"
         mycursor.execute(sql)
         db_connection.commit()
        
+        intervaloLeitura = 600.0 #10 min
         #SETA 1 NA PORTA GPIO21 PARA QUE O AERADOR SEJA ATIVADO
         aeradorLigado = 1
         GPIO.output(21,1)
-    elif oxigenioDissolvido >= 6.0 and aeradorLigado == 1:
+    elif oxigenioDissolvido > 4.5 and aeradorLigado == 1:
         #BUSCA NA TABELA AERADOR O ULTIMO REGISTRO DO AERADOR LIGADO PARA SALVAR A HORA DE FIM DE EXECUCAO
         sql = "SELECT idAerador FROM aerador where dataHoraFim is null ORDER BY idAerador DESC LIMIT 1"
         mycursor.execute(sql)
@@ -95,11 +97,12 @@ while True:
         mycursor.execute(sql, values)
         db_connection.commit()     
         
+        intervaloLeitura = 1800.0 #10 min
         #SETA 0 NA PORTA GPIO12 PARA QUE O AERADOR SEJA DESATIVADO
         aeradorLigado = 0
         GPIO.output(21,0)
         
     print('Aerador Ligado: ', aeradorLigado)
     print('\n\n')
-   #time.sleep(1800.0) #30 min
-    time.sleep(60.0) #1 min
+    time.sleep(intervaloLeitura) #30 min
+    #time.sleep(60.0) #1 min
