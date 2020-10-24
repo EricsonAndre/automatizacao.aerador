@@ -17,8 +17,10 @@ def capturar_ph():
     #Faz a media de 10 leituras (Quanto mais, mais preciso)
     for i in range(10):
         chan = AnalogIn(ads, ADS.P0) #Le a porta P0 do ADS
-        volts += chan.value * 4096 / 32768 / 1000  # CONVERTE DE DIGITAL PAR VOLTS
+        volts += (chan.value * 4096 / 32768 / 1000) # CONVERTE DE DIGITAL PAR VOLTS
         time.sleep(5)
-    voltagem_media = volts/10
+    voltagem_media = (volts/10) + 0.50
+    
+    print('\nVoltagem Media pH: ', voltagem_media)
     
     return ((-5.7 * round(voltagem_media, 3))+21.44)   #Formula para calcular pH. 

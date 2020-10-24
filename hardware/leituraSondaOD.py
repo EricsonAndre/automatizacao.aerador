@@ -48,10 +48,12 @@ def capturar_saturacao(voltagem_calibrada):
     #Faz a media de 1000 leituras
     for i in range(1000):
         voltage += chan.voltage*1000
-    voltagem_media = voltage/1000
+    voltagem_media = (voltage/1000) + 150.0
 
     #Formula para calcular a percentagem de saturacao
     percentagem_saturacao = (voltagem_media * 100.0)/voltagem_calibrada
+
+    print('Voltagem Media O.D: ', voltagem_media)
 
     #Salva a Voltagem Media para fins de Analises do Desenvolvedor
     sql = "INSERT INTO voltagem(valor, dataHora) VALUES (%s, CURRENT_TIMESTAMP)"
