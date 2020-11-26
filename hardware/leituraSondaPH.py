@@ -19,7 +19,7 @@ def capturar_ph():
         chan = AnalogIn(ads, ADS.P0) #Le a porta P0 do ADS
         volts += (chan.value * 4096 / 32768 / 1000) # CONVERTE DE DIGITAL PAR VOLTS
         time.sleep(5)
-    voltagem_media = (volts/10) + 0.50
+    voltagem_media = (volts/10)
     
     print('\nVoltagem Media pH: ', voltagem_media)
     
